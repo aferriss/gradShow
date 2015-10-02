@@ -1,0 +1,665 @@
+
+<html>
+
+<head>
+  <title>Located Graphics</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+  
+  <meta property="og:url" content="http://located.graphics" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Located Graphics" />
+  <meta property="og:image" content="http://located.graphics/meta.png" />
+  <meta property="og:description" content="A webgl experiment/tool for distorting search results." />
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <style>
+    html, body{
+        width: 100%;
+        height: 100%;
+    }
+
+    body {
+        padding: 0px;
+        margin: 0px;
+        overflow: hidden;
+        font-family: Big Caslon,Book Antiqua,Palatino Linotype,Georgia,serif;
+        font-size: 14px;
+        font-style: normal;
+        font-variant: normal;
+        font-weight: 400;
+        color: white;
+        
+
+    }
+    h1 {
+        padding:0px;
+        margin: 0px;
+        
+        font-size:60px;
+     
+        z-index: 10;
+        position: relative;
+    }
+
+    a{
+        color: white;
+        text-decoration: underline;
+    }
+
+    a:link{
+        color: white;
+    }
+
+    a:visited{
+        color: white;
+    }
+
+
+    a:hover{
+        color: white;
+    }
+
+    a:active{
+        color: white;
+    }
+
+    title{
+        display:none !important;
+    }
+
+    ul{
+        list-style: none;
+        padding-left: 0;
+    }
+
+    p{
+        font-size: 18px;
+    }
+
+    #pageContainer{
+        width: 90%;
+        height: 90%;
+        border: 5px solid white;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+        margin: auto;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        z-index: 10;
+        padding: 5%;
+        
+    }
+
+    #secondBorder{
+        width: 90%;
+        height: 90%;
+        border: 5px solid white;
+        border-top: 0px;
+        position: relative;
+        margin: auto;
+        top: 0px;
+        z-index: 10;
+    }
+
+    #glCanvas{
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        display: block;
+        z-index: 1;
+    }
+
+    #rot1{
+        transform: rotate(90deg);
+        -webkit-transform: rotate(90deg);
+    }
+
+    #rot1{
+        transform: rotate(-90deg);
+        -webkit-transform: rotate(-90deg);
+    }
+
+    #artists{
+        position: relative;
+        z-index: 10;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        width: 50%;
+        float: left; 
+    }
+
+    #info{
+        width: 30%;
+        float: left;
+        display: inline;
+    }
+
+    </style>
+
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="fboTextureUtils.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+  <div id="pageContainer">
+    
+  <h1>Default MFA Exhibition 2015</h1>
+  
+    <ul id="artists">
+        <li><a href="http://adamferriss.com">Adam Ferriss</a></li>
+        <li><a href="http://jessefleming.com/">Jesse Fleming</a></li>
+        <li><a href="http://cargocollective.com/hsinyulin">Hsin-Yu Lin</a></li>
+        <li><a href="https://twitter.com/_kitchen">Peter Lu</a></li>
+        <li><a href="http://www.neilmendoza.com/">Neil Mendoza</a></li>
+        <li><a href="http://theotrian.tumblr.com/">Theo Triantafyllidis</a></li>
+    </ul>
+
+    <div id="info">
+        <p>
+            <strong>
+                Opening Reception <br />
+            </strong>
+                Oct 15<br />
+                5-8pm
+        </p>
+
+        <p>
+            <strong>
+                Open Daily <br />
+            </strong>
+                Oct 16-23, M-F<br />
+                10am-5pm
+        </p>
+
+        <p>
+            <i>*Cycles</i>, Oct 18 from 10am-10pm<br />
+            EDA, Broad Art Center<br />
+            Organized by Jesse R. Fleming<br />
+            Please Visit <a href="http://jessefleming.com/cycles">jessefleming.com/cycles</a><br />
+            for schedule and more information
+        </p>
+
+        <p>
+            New Wight Gallery</br />
+            Broad Art Center<br />
+            240 Charles E. Young Drive<br />
+            Los Angeles, CA 90095-1456
+
+        <p>
+            Free and open to the public <br />
+            Parking available in lot 3: $3/ hr <br />
+            Further information: (310) 825-9007 <br />
+            http://mfa.dma.ucla.edu/
+        </p>
+    </div>
+    
+  </div>
+  <div id="hiddenImages"></div>
+  <div id="satImgs"></div>
+  <canvas id="canvas" width="100%" height="100%" style="display:none;">Sorry your browser does not support canvas</canvas>
+  <canvas id="glCanvas" style ="position:absolute;top:0;left:0;z-index:0;width:100%; height:100%;"> </canvas>
+
+  <!--<button id="initButton" onclick="init()">init</button>-->
+
+  <!--
+  <div id="infoBox">
+    <form id="submit" method="post" action="">
+        <input id="myVal" type="text" name="myVal" />
+        <input type="submit" class="button" id="initButton" name="form_submit" value="Search" />
+    </form>
+  </div>
+    -->
+
+<script id="baseVs" type="x-shader/x-vertex">
+attribute vec3 pos;
+attribute vec4 color;
+attribute vec2 texcoord;
+
+varying vec2 v_texCoord;
+varying vec4 vColor;
+
+void main() {
+
+    gl_Position = vec4((pos.x*1.0),pos.y,pos.z,1.0);
+    v_texCoord = texcoord;
+    vColor = color;
+
+}
+</script>
+
+<script id="baseFs" type="x-shader/x-fragment">
+
+precision mediump float;
+// our texture
+uniform sampler2D u_image;
+
+varying vec2 v_texCoord;
+
+void main() {
+
+    vec4 color = texture2D(u_image, v_texCoord);
+
+    gl_FragColor = vec4(color.r,color.g,color.b,1.0);
+}
+</script>
+
+<script id="reposFrag" type="x-shader/x-fragment">
+precision mediump float;
+varying vec2 v_texCoord;
+
+uniform vec2 amt;
+uniform sampler2D u_image;
+uniform sampler2D u_image2;
+uniform float hueMode;
+
+vec3 rgb2hsv(vec3 c)
+{
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+    
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(( (q.z + (q.w - q.y) / (6.0 * d + e))) ), d / (q.x + e), q.x);
+}
+
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+void main(){
+
+    vec4 look = texture2D(u_image2,v_texCoord);
+    vec2 offs = vec2(look.y-look.x,look.y-look.z)*amt;
+    vec2 coord = offs+v_texCoord; 
+
+    vec4 repos = texture2D(u_image,coord);
+
+    vec3 hsv = rgb2hsv(repos.rgb);
+
+    //hsv = hsv.g < 0.5 ? vec3(0.0) : hsv;
+
+    //vec3 rgb = hsv2rgb(hsv);
+
+    //repos = vec4(rgb, 1.0);
+
+    hsv.r += 0.005;
+    hsv.r = mod(hsv.r, 1.0);
+
+    //hsv.g += 0.005;
+    //hsv.g = mod(hsv.g, 1.0);
+
+    //hsv.b += 0.01;
+    //hsv.b = mod(hsv.b, 1.0);
+
+    vec3 rgb = hsv2rgb(hsv) ;
+    rgb = mix(look.rgb, rgb, hsv.b);
+
+    //vec4 newRepos1 = hsv.g > 0.65 ? vec4( 0.0 ) : vec4(rgb, 1.0);
+    vec4 newRepos2 = hsv.g < 0.05 ? vec4( 0.0 ) : vec4(rgb, 1.0);
+
+
+
+    //repos = hueMode > 0.5 ? newRepos2 : newRepos1;
+    //repos = vec4(repos.rgb, 0.95);
+
+    //repos =  < 0.5 ? vec4(0.0) : repos;
+    //repos = repos.b < 0.5 ? vec4(0.0) : repos;
+
+    gl_FragColor = newRepos2;
+
+}
+</script>
+
+<script id="colorFrag" type="x-shader/x-fragment">
+precision mediump float;
+varying vec2 v_texCoord;
+
+uniform sampler2D u_image;
+
+void main(){
+    gl_FragColor = texture2D(u_image, v_texCoord);
+}
+</script>
+
+
+<script type="text/javascript">
+var canvas = document.getElementById("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+var ctx = canvas.getContext("2d");
+
+var glCanvas = document.getElementById("glCanvas");
+glCanvas.width = window.innerWidth;
+glCanvas.height = window.innerHeight;
+
+var imgCount = 0;
+var gl, cBB;
+var baseProgram, reposProgram;
+var sourceImageFbo, reposFbo, feedback;
+var reposTex;
+var fps = 33;
+var textureArray = [];
+var tex;
+var imgObj = new Image();
+var imgs = [];
+var textureStack, fboStack;
+var drawing = false;
+var count;
+var reposAmt = 20;
+var term = "";
+var timer;
+var currentImg;
+var stop = false;
+var doUpload = false;
+var verbose = true;
+var started = false;
+var loopCount = 0;
+setupGL();
+setupTextures();
+var existingImgs;
+var hueMode = 0.0;
+var hueModeBool = false;
+
+var staticUrls = [];
+
+
+for(var i = 1; i<27; i++){
+    staticUrls.push("images/"+i+".jpg");
+}
+
+
+
+
+doThings();
+
+document.addEventListener('mousedown', onDocumentMouseDown, false);
+document.addEventListener('mousemove', onDocumentMouseMove, false);
+document.addEventListener('keydown', onDocumentKeyPress, false);
+window.addEventListener( 'resize', resizeCanvas, false );
+
+
+$hiddenImages = $("#hiddenImages");
+
+
+                function setupGL() {
+                    gl = getWebGLContext(glCanvas, {
+                        preserveDrawingBuffer: true
+                    });
+
+                    if(!gl){
+                        alert("Looks like your browser / device doesn't support webgl");
+                        return;
+                    }
+
+                    cBB = new pxBB();
+                    reposFbo = new pxFbo();
+                    sourceImageFbo = new pxFbo();
+                    feedback = new pxFbo();
+
+                    reposFbo.allocate(canvas.width, canvas.height, true);
+                    sourceImageFbo.allocate(canvas.width, canvas.height, true);
+                    feedback.allocate(canvas.width, canvas.height, true);
+
+                    var baseVs = createShaderFromScriptElement(gl, "baseVs");
+                    var baseFs = createShaderFromScriptElement(gl, "baseFs");
+                    var reposFs = createShaderFromScriptElement(gl, "reposFrag");
+
+                    baseProgram = createProgram(gl, [baseVs, baseFs]);
+                    reposProgram = createProgram(gl, [baseVs, reposFs]);
+                }
+
+                function setupTextures() {
+                    reposTex = createAndSetupTexture(gl);
+                    reposTex.image = canvas;
+                    gl.bindTexture(gl.TEXTURE_2D, reposTex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+
+                    sourceImageFbo.start();
+                    cBB.draw(baseProgram, reposTex);
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                }
+
+
+
+             function loadImages(imageUrls) {
+                var images = [];
+                
+                var numImgs = imageUrls.length;
+
+                if (imageUrls.length < numImgs) {
+                    numImgs = imageUrls.length;
+                }
+
+                for (var i = 0; i < numImgs; i++) {
+                    var img = new Image();
+                    img.onload = onLoadHandler;
+                    img.src = imageUrls[i];
+                    images.push(img);
+                }
+                    checkImages();
+                    return images;
+                }
+
+                function doThings() {
+                    //var D = "googleImgs.php";///*"http://corsify.appspot.com/"+*/ srcUrl;
+                    //var results = $.getValues(D);
+                    //var urls = parseHtml(getImgLinks());
+                    //if (urls.length != 0) {
+                        //var spliced = spliceArray(urls);
+                        var images = loadImages(staticUrls);
+                        //var oldImages = loadOldImgs(existingImgs);
+                        //console.log(images);
+                        imgs = images;
+                        count = imgs.length;
+                        //document.body.appendChild(imgs[3]);
+                        checkImages();
+
+                    //} else {
+                    //}
+                }
+
+                function onLoadHandler() {
+                    count--;
+
+                    currentImg = imgs.length - count ;
+                }
+
+
+
+                function onErrorHandler(img) {
+                    alert("error Loading image");
+                }
+
+                function shuffle(array){
+                    var currentIndex = array.length, temporaryValue, randomIndex;
+                    while( 0 !== currentIndex){
+                        randomIndex = Math.floor(Math.random()*currentIndex);
+                        currentIndex -= 1;
+
+                        temporaryValue = array[currentIndex];
+                        array[currentIndex] = array[randomIndex];
+                        array[randomIndex] = temporaryValue;
+                    }
+                    return array;
+                }
+
+                function convertImgToTexture(imageArray) {
+                    var textureArray = [];
+
+                    for (var i = 0; i < imageArray.length; i++) {
+                        var tex = createAndSetupTexture(gl);
+                        tex.image = imageArray[i];
+                        gl.bindTexture(gl.TEXTURE_2D, tex);
+                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
+                        textureArray.push(tex);
+                    }
+
+                    return textureArray;
+                }
+
+                function makeFboArray(textureArray) {
+                    var fboArray = [];
+                    for (var i = 0; i < textureArray.length; i++) {
+                        var fbo = new pxFbo();
+                        fbo.allocate(canvas.width, canvas.height, true);
+                        fboArray.push(fbo);
+
+                        fboArray[i].start();
+                        cBB.draw(baseProgram, textureArray[i]);
+                    }
+                    return fboArray;
+                }
+
+                function checkImages() {
+                    if (currentImg == imgs.length) {
+                        stop = false;
+
+                        textureStack = convertImgToTexture(imgs);
+                        fboStack = makeFboArray(textureStack);
+                        if(!started){
+                            loop();
+                        }
+
+                    } else {
+                        window.requestAnimationFrame(checkImages);
+                       
+                    }
+                }
+
+
+                function loop() {
+
+                    started = true;
+
+                    
+                    setTimeout(function() {
+                        window.requestAnimationFrame(loop);
+                    }, fps);
+
+                    sourceImageFbo.start();
+                    cBB.draw(baseProgram, fboStack[imgCount].texture);
+
+                    reposFbo.start();
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                    sourceImageFbo.draw2(reposProgram, feedback.texture);
+                    gl.useProgram(reposProgram);
+                    gl.uniform2f(gl.getUniformLocation(reposProgram, "amt"), reposAmt/canvas.width,reposAmt/canvas.height);
+
+                    gl.disable(gl.BLEND);
+
+                    feedback.start();
+                    reposFbo.draw(baseProgram);
+
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    reposFbo.draw(baseProgram);
+
+                    //imgs[imgCount].src = glCanvas.toDataURL("image/jpg");
+
+                    fboStack[imgCount].start();
+                    reposFbo.draw(baseProgram);
+
+                    //gl.bindTexture(gl.TEXTURE_2D, textureStack[imgCount]);
+
+                    imgCount = (imgCount + 1) % textureStack.length;
+
+
+
+                    gl.bindTexture(gl.TEXTURE_2D, reposTex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+                }
+
+
+                function init() {
+                    //clearTimeout(timer);
+                    //term = getInputText();
+                    //srcUrl = createSearchUrl(term);
+                    doThings();
+                }
+
+                function map(value, max, minrange, maxrange) {
+                    return ((max - value) / (max)) * (maxrange - minrange) + minrange;
+                }
+
+
+                function onDocumentMouseDown(event) {
+                    //imgs[imgCount].src = glCanvas.toDataURL("image/jpg");
+                    imgCount = (imgCount + 1) % textureStack.length;
+                }
+
+
+                
+
+function onDocumentMouseMove(event) {
+    mouseX = (event.clientX);
+    mouseY = (event.clientY);
+}
+
+function onDocumentKeyPress(e) {
+                    //uploadImage();
+                    var event = window.event ? window.event : e;
+                   if(event.keyCode == 38){ //up
+                    reposAmt++;
+                }
+                   if(event.keyCode == 40){ //down
+                    reposAmt--;
+                }
+                   if(event.keyCode == 37){ // left
+                    fps += 5;
+                }
+                   if(event.keyCode == 39){ //right
+                    if(fps>=0){
+                        fps -= 5;
+                    }
+                }
+
+                if(event.keyCode == 32){
+                    if(started && $("#infoBox").css('display') == 'none'){
+                        stop = true;
+                        if(stop == true){
+                            var saveImage = glCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+                            window.location.href = saveImage;
+                        }
+                        stop = false;
+                        if(stop == false){
+                            loop();
+                        }
+                    }
+                }
+
+
+            }
+
+
+
+function resizeCanvas(){
+  var width = gl.canvas.width;
+  var height = gl.canvas.height;
+  if(canvas.width != width ||
+   canvas.height != height){
+   canvas.width = width;
+canvas.height = height;
+}
+}
+
+</script>
+
+
+
+</body>
+
+</html>
