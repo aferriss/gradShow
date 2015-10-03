@@ -1,20 +1,19 @@
 
-<html>
+<!DOCTYPE html>
 
 <head>
-  <title>Located Graphics</title>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
+    <title>Website Title</title>
   
   <meta property="og:url" content="http://located.graphics" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Located Graphics" />
+  <meta property="og:title" content="~~~~~~~~~~~~" />
   <meta property="og:image" content="http://located.graphics/meta.png" />
-  <meta property="og:description" content="A webgl experiment/tool for distorting search results." />
+  <meta property="og:description" content="How many do you have they're?" />
 
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-
+    <link href='https://fonts.googleapis.com/css?family=Oswald:300' rel='stylesheet' type='text/css'>
+    
     <style>
     html, body{
         width: 100%;
@@ -26,19 +25,20 @@
         margin: 0px;
         overflow: hidden;
         font-family: Big Caslon,Book Antiqua,Palatino Linotype,Georgia,serif;
-        font-size: 14px;
+        font-size: 2.35vmin;
         font-style: normal;
         font-variant: normal;
-        font-weight: 400;
+        font-weight: 600;
         color: white;
-        
+        text-shadow: 0px 0px 6px #ffffff;
+
 
     }
     h1 {
         padding:0px;
         margin: 0px;
         
-        font-size:60px;
+        font-size:10vmin;
      
         z-index: 10;
         position: relative;
@@ -66,9 +66,6 @@
         color: white;
     }
 
-    title{
-        display:none !important;
-    }
 
     ul{
         list-style: none;
@@ -76,13 +73,13 @@
     }
 
     p{
-        font-size: 18px;
+       
     }
 
     #pageContainer{
         width: 90%;
         height: 90%;
-        border: 5px solid white;
+        /*border: 5px solid white;*/
         position: absolute;
         top: 0px;
         left: 0px;
@@ -94,7 +91,13 @@
         -webkit-box-sizing: border-box;
         z-index: 10;
         padding: 5%;
-        
+
+        display: flex;
+        display: -webkit-flex;
+        -webkit-flex-direction: column;
+        flex-direction: column;
+        flex-wrap: wrap;
+        /*background-color: rgba(255,255,255,0.25);*/
     }
 
     #secondBorder{
@@ -116,31 +119,31 @@
         z-index: 1;
     }
 
-    #rot1{
-        transform: rotate(90deg);
-        -webkit-transform: rotate(90deg);
-    }
-
-    #rot1{
-        transform: rotate(-90deg);
-        -webkit-transform: rotate(-90deg);
-    }
 
     #artists{
-        position: relative;
         z-index: 10;
         color: white;
-        font-size: 18px;
         font-weight: 600;
-        width: 50%;
-        float: left; 
+        width: 33%;
+        position: relative;
+        line-height: 1.5em;
+        font-family: 'Oswald', sans-serif;
     }
 
     #info{
-        width: 30%;
-        float: left;
+        width: 33%;
+        word-wrap: break-word;
+        font-family: 'Oswald', sans-serif;
+
+    }
+
+    #showName{
+        width: 33%;
+        margin-right: 100px;
+        margin-bottom: 50px;
         display: inline;
     }
+
 
     </style>
 
@@ -152,18 +155,19 @@
 <body>
   <div id="pageContainer">
     
-  <h1>Default MFA Exhibition 2015</h1>
-  
+  <h1 id="showName">UCLA 2015 Rare Memes</h1>
+
     <ul id="artists">
         <li><a href="http://adamferriss.com">Adam Ferriss</a></li>
         <li><a href="http://jessefleming.com/">Jesse Fleming</a></li>
-        <li><a href="http://cargocollective.com/hsinyulin">Hsin-Yu Lin</a></li>
-        <li><a href="https://twitter.com/_kitchen">Peter Lu</a></li>
+        <li><a href="http://hsinyulin.info/">Hsin-Yu Lin</a></li>
+        <li><a href="http://faucet.5fkitchen.com/website/">Peter Lu</a></li>
         <li><a href="http://www.neilmendoza.com/">Neil Mendoza</a></li>
         <li><a href="http://theotrian.tumblr.com/">Theo Triantafyllidis</a></li>
     </ul>
 
-    <div id="info">
+
+      <div id="info">
         <p>
             <strong>
                 Opening Reception <br />
@@ -198,26 +202,17 @@
             Free and open to the public <br />
             Parking available in lot 3: $3/ hr <br />
             Further information: (310) 825-9007 <br />
-            http://mfa.dma.ucla.edu/
+            <a href="http://mfa.dma.ucla.edu/">http://mfa.dma.ucla.edu/</a>
         </p>
     </div>
     
+  
+
+
   </div>
-  <div id="hiddenImages"></div>
-  <div id="satImgs"></div>
+
   <canvas id="canvas" width="100%" height="100%" style="display:none;">Sorry your browser does not support canvas</canvas>
-  <canvas id="glCanvas" style ="position:absolute;top:0;left:0;z-index:0;width:100%; height:100%;"> </canvas>
-
-  <!--<button id="initButton" onclick="init()">init</button>-->
-
-  <!--
-  <div id="infoBox">
-    <form id="submit" method="post" action="">
-        <input id="myVal" type="text" name="myVal" />
-        <input type="submit" class="button" id="initButton" name="form_submit" value="Search" />
-    </form>
-  </div>
-    -->
+  <canvas id="glCanvas" style ="position:absolute;top:0;left:0;z-index:0;width:100%; height:100%;">Sorry your browser does not support canvas</canvas>
 
 <script id="baseVs" type="x-shader/x-vertex">
 attribute vec3 pos;
@@ -323,17 +318,6 @@ void main(){
 }
 </script>
 
-<script id="colorFrag" type="x-shader/x-fragment">
-precision mediump float;
-varying vec2 v_texCoord;
-
-uniform sampler2D u_image;
-
-void main(){
-    gl_FragColor = texture2D(u_image, v_texCoord);
-}
-</script>
-
 
 <script type="text/javascript">
 var canvas = document.getElementById("canvas");
@@ -351,7 +335,7 @@ var gl, cBB;
 var baseProgram, reposProgram;
 var sourceImageFbo, reposFbo, feedback;
 var reposTex;
-var fps = 33;
+var fps = 75;
 var textureArray = [];
 var tex;
 var imgObj = new Image();
@@ -359,7 +343,7 @@ var imgs = [];
 var textureStack, fboStack;
 var drawing = false;
 var count;
-var reposAmt = 20;
+var reposAmt = 10;
 var term = "";
 var timer;
 var currentImg;
@@ -381,8 +365,18 @@ for(var i = 1; i<27; i++){
     staticUrls.push("images/"+i+".jpg");
 }
 
+var titles = [
+    "Rare Memes",
+    "Default MFA Template 2015",
+    "Why did they do that",
+    "Full Troll",
+    "LA Based Artists"
+];
 
 
+console.log($("#showName").text());
+
+$("#showName").text(titles[Math.floor(Math.random()*titles.length)]);
 
 doThings();
 
@@ -481,7 +475,7 @@ $hiddenImages = $("#hiddenImages");
 
 
                 function onErrorHandler(img) {
-                    alert("error Loading image");
+                    //alert("error Loading image");
                 }
 
                 function shuffle(array){
@@ -513,6 +507,7 @@ $hiddenImages = $("#hiddenImages");
 
                 function makeFboArray(textureArray) {
                     var fboArray = [];
+                    shuffle(textureArray);
                     for (var i = 0; i < textureArray.length; i++) {
                         var fbo = new pxFbo();
                         fbo.allocate(canvas.width, canvas.height, true);
@@ -531,7 +526,7 @@ $hiddenImages = $("#hiddenImages");
                         textureStack = convertImgToTexture(imgs);
                         fboStack = makeFboArray(textureStack);
                         if(!started){
-                            loop();
+                           loop();
                         }
 
                     } else {
@@ -611,6 +606,7 @@ function onDocumentMouseMove(event) {
 
 function onDocumentKeyPress(e) {
                     //uploadImage();
+                    /*
                     var event = window.event ? window.event : e;
                    if(event.keyCode == 38){ //up
                     reposAmt++;
@@ -641,8 +637,8 @@ function onDocumentKeyPress(e) {
                     }
                 }
 
-
-            }
+*/
+}
 
 
 
